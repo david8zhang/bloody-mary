@@ -1,9 +1,13 @@
 import { BloodTypes, BLOOD_TYPE_TO_COLOR } from '~/config/BloodTypes'
+import { GameConstants } from '~/config/GameConstants'
 import {
-  COCKTAIL_GRADE,
+  CocktailGrade,
+  COCKTAIL_GRADE_LINES,
   LevelTypes,
+  LEVEL_ADJECTIVES,
   LEVEL_TO_PERCENTAGE_MAPPING,
   PrefTypes,
+  PREF_ADJECTIVES,
 } from '~/config/PrefConstants'
 import Game from '~/scenes/Game'
 
@@ -12,27 +16,38 @@ export interface CustomerConfig {
     x: number
     y: number
   }
-  affinityType: BloodTypes
-  allergyType: BloodTypes
 }
 
 export class Customer {
+  private static readonly MOVE_DURATION = 1250
+
   private game: Game
   private sprite!: Phaser.GameObjects.Sprite
-  private affinityType: BloodTypes
-  private allergyType: BloodTypes
+  private eyes: Phaser.GameObjects.Arc[] = []
+  private defaultPosition: { x: number; y: number }
+
+  private affinityType!: BloodTypes
+  private allergyType!: BloodTypes
   private preferenceMap: any = {}
+  private preferenceLineText: Phaser.GameObjects.Text
 
   constructor(game: Game, config: CustomerConfig) {
     this.game = game
-    const { position, affinityType, allergyType } = config
-    this.affinityType = affinityType
-    this.allergyType = allergyType
-
-    console.log(this.affinityType, this.allergyType)
-
+    const { position } = config
+    this.defaultPosition = position
     this.createSprite(position)
-    this.generatePreferences()
+
+    this.preferenceLineText = this.game.add
+      .text(
+        position.x + this.sprite.displayWidth / 2 - 50,
+        position.y - this.sprite.displayHeight / 2 + 50,
+        ''
+      )
+      .setStyle({
+        fontSize: '18px',
+        color: 'white',
+      })
+    this.reset()
   }
 
   createSprite(position: { x: number; y: number }) {
@@ -43,18 +58,20 @@ export class Customer {
       .sprite(position.x, position.y, 'sample-vampire')
       .setScale(1)
       .setTint(outfitColor)
-    this.game.add.circle(
+    const leftEye = this.game.add.circle(
       position.x - 10,
       position.y - this.sprite.displayHeight / 2 + 90,
       8,
       eyeColor
     )
-    this.game.add.circle(
+    const rightEye = this.game.add.circle(
       position.x + 35,
       position.y - this.sprite.displayHeight / 2 + 91,
       8,
       eyeColor
     )
+    this.eyes.push(leftEye)
+    this.eyes.push(rightEye)
   }
 
   evaluateDrink(recipe: BloodTypes[]) {
@@ -98,40 +115,92 @@ export class Customer {
 
     // Compare the preference percentage values with the cocktail percentage values
     let inaccuracyPct = 0
-    let isDead: boolean = false
+    const actualAllergyPct = actualToRawPercentageMap[PrefTypes.ALLERGY]
+      ? actualToRawPercentageMap[PrefTypes.ALLERGY]
+      : 0
+    const prefAllergyPct = prefToRawPercentageMap[PrefTypes.ALLERGY]
+      ? prefToRawPercentageMap[PrefTypes.ALLERGY]
+      : 0
+    let isDead: boolean = actualAllergyPct > prefAllergyPct
     Object.keys(prefToRawPercentageMap).forEach((key: string) => {
       const prefType = key as PrefTypes
       const expectedPct = prefToRawPercentageMap[prefType]
       const actualPct = actualToRawPercentageMap[prefType] ? actualToRawPercentageMap[prefType] : 0
       inaccuracyPct += Math.abs(actualPct - expectedPct)
-      if (prefType === PrefTypes.ALLERGY) {
-        if (actualPct > expectedPct) {
-          isDead = true
-        }
-      }
     })
     return this.getGradeForThresholdDiff(1 - inaccuracyPct, isDead)
   }
 
   getGradeForThresholdDiff(accuracyPct: number, isDead: boolean) {
     if (isDead) {
-      return COCKTAIL_GRADE.DEAD
+      return CocktailGrade.DEAD
     }
-    if (accuracyPct >= 0 && accuracyPct < 0.6) {
-      return COCKTAIL_GRADE.F
+    if (accuracyPct < 0.6) {
+      return CocktailGrade.F
     }
     if (accuracyPct >= 0.6 && accuracyPct < 0.7) {
-      return COCKTAIL_GRADE.D
+      return CocktailGrade.D
     }
     if (accuracyPct >= 0.7 && accuracyPct < 0.8) {
-      return COCKTAIL_GRADE.C
+      return CocktailGrade.C
     }
     if (accuracyPct >= 0.8 && accuracyPct < 0.9) {
-      return COCKTAIL_GRADE.B
+      return CocktailGrade.B
     }
     if (accuracyPct > 0.9) {
-      return COCKTAIL_GRADE.A
+      return CocktailGrade.A
     }
+  }
+
+  generatePreferenceLines() {
+    const prefLines: string[] = []
+    const firstLineTemplates = [
+      "I'm in the mood for something",
+      'Give me something',
+      "I'd like a drink that's",
+      'Just something',
+      'Serve me up something',
+      'I want to drink something',
+    ]
+    const additionalLineTemplates = [
+      'With something',
+      'And also something',
+      'Plus something',
+      'As well as something',
+      'Along with something',
+    ]
+
+    Object.keys(this.preferenceMap).forEach((key: string, index: number) => {
+      const prefType = key as PrefTypes
+      const level = this.preferenceMap[key] as LevelTypes
+      const prefAdjectives = PREF_ADJECTIVES[prefType]
+      const levelAdjectives = LEVEL_ADJECTIVES[level]
+      const randPrefAdjective = prefAdjectives[Phaser.Math.Between(0, prefAdjectives.length - 1)]
+      const randLevelAdjective = levelAdjectives[Phaser.Math.Between(0, levelAdjectives.length - 1)]
+
+      let randTemplate = ''
+      if (index === 0) {
+        randTemplate = firstLineTemplates[Phaser.Math.Between(0, firstLineTemplates.length - 1)]
+      } else {
+        randTemplate =
+          additionalLineTemplates[Phaser.Math.Between(0, additionalLineTemplates.length - 1)]
+      }
+
+      prefLines.push(`${randTemplate} ${randLevelAdjective} ${randPrefAdjective}.`)
+    })
+    return prefLines
+  }
+
+  displayPreferenceLines() {
+    const preferenceLines = this.generatePreferenceLines().join('\n\n')
+    this.preferenceLineText
+      .setText(preferenceLines)
+      .setPosition(
+        this.defaultPosition.x + this.sprite.displayWidth / 2 - 50,
+        this.defaultPosition.y - this.sprite.displayHeight / 2 + 50
+      )
+      .setVisible(true)
+      .setWordWrapWidth(GameConstants.WINDOW_WIDTH - this.preferenceLineText.x - 20)
   }
 
   generatePreferences() {
@@ -175,5 +244,82 @@ export class Customer {
       }
     }
     this.preferenceMap = preferenceMap
+  }
+
+  die() {
+    this.game.tweens.add({
+      targets: [this.sprite, ...this.eyes],
+      alpha: {
+        from: 1,
+        to: 0,
+      },
+      duration: 500,
+      onComplete: () => {
+        this.reset()
+      },
+    })
+  }
+
+  moveAlong() {
+    this.game.tweens.add({
+      targets: [this.sprite, ...this.eyes],
+      x: `-=${GameConstants.WINDOW_WIDTH * 0.75}`,
+      duration: Customer.MOVE_DURATION * 1.25,
+      onComplete: () => {
+        this.reset()
+      },
+    })
+  }
+
+  reset() {
+    const offset = GameConstants.WINDOW_WIDTH / 2 + 150
+    this.sprite.setPosition(this.defaultPosition.x + offset, this.defaultPosition.y).setAlpha(1)
+    const leftEye = this.eyes[0]
+    const rightEye = this.eyes[1]
+    leftEye.setPosition(this.defaultPosition.x - 10 + offset, leftEye.y).setAlpha(1)
+    rightEye.setPosition(this.defaultPosition.x + 35 + offset, rightEye.y).setAlpha(1)
+    const bloodTypes = this.game
+      .getAllBloodTypes()
+      .filter((bloodType) => bloodType !== BloodTypes.HUMAN)
+    const randomBloodTypeOrdering = Game.shuffle(bloodTypes)
+    this.affinityType = randomBloodTypeOrdering[0]
+    this.allergyType = randomBloodTypeOrdering[1]
+    this.sprite.setTint(BLOOD_TYPE_TO_COLOR[this.affinityType])
+    this.eyes.forEach((eye) => {
+      eye.setFillStyle(BLOOD_TYPE_TO_COLOR[this.allergyType])
+    })
+    this.game.tweens.add({
+      delay: 1000,
+      targets: [this.sprite, ...this.eyes],
+      x: `-=${offset}`,
+      duration: Customer.MOVE_DURATION,
+      onComplete: () => {
+        this.preferenceLineText.setAlpha(1).setFontSize(18)
+        this.generatePreferences()
+        this.displayPreferenceLines()
+      },
+    })
+  }
+
+  displayReaction(grade: CocktailGrade, cb: Function) {
+    const lines = COCKTAIL_GRADE_LINES[grade]
+    const randLine = lines[Phaser.Math.Between(0, lines.length - 1)]
+    this.preferenceLineText.setText(randLine).setFontSize(30)
+    this.game.tweens.add({
+      delay: 2000,
+      targets: [this.preferenceLineText],
+      alpha: {
+        from: 1,
+        to: 0,
+      },
+      y: {
+        from: this.preferenceLineText.y,
+        to: this.preferenceLineText.y - 10,
+      },
+      duration: 500,
+      onComplete: () => {
+        cb()
+      },
+    })
   }
 }

@@ -5,9 +5,15 @@ import { Goblet } from '~/core/Goblet'
 import { Blood } from '~/core/Blood'
 import { Button } from '~/ui/Button'
 import { Customer } from '~/core/Customer'
+import { CocktailGrade, COCKTAIL_GRADE_REP_BONUSES } from '~/config/PrefConstants'
 
 export default class Game extends Phaser.Scene {
   private goblet!: Goblet
+
+  // Reputation
+  private reputationScore: number = 100
+  private reputationText!: Phaser.GameObjects.Text
+  private addRepText!: Phaser.GameObjects.Text
 
   // Bar
   private barTop!: Phaser.GameObjects.Rectangle
@@ -45,10 +51,23 @@ export default class Game extends Phaser.Scene {
   createGoblet() {
     this.goblet = new Goblet(this, {
       position: {
-        x: 165,
+        x: 140,
         y: GameConstants.WINDOW_HEIGHT / 2 + 60,
       },
     })
+  }
+
+  createReputationScoreText() {
+    this.reputationText = this.add
+      .text(GameConstants.WINDOW_WIDTH - 20, 40, `Rep: ${this.reputationScore}`)
+      .setFontSize(20)
+    this.reputationText.setPosition(
+      GameConstants.WINDOW_WIDTH - this.reputationText.displayWidth - 40,
+      30
+    )
+    this.addRepText = this.add
+      .text(GameConstants.WINDOW_WIDTH - 40, this.reputationText.y + 20, '')
+      .setFontSize(18)
   }
 
   getAllBloodTypes(): BloodTypes[] {
@@ -62,9 +81,8 @@ export default class Game extends Phaser.Scene {
     const bloodTypes = this.getAllBloodTypes()
     let xPos = 60
     const yPos = this.barTop.y + 60
-    let padding = 5
     bloodTypes.forEach((bloodType: string) => {
-      const blood = new Blood(this, {
+      new Blood(this, {
         position: {
           x: xPos,
           y: yPos,
@@ -82,6 +100,7 @@ export default class Game extends Phaser.Scene {
     this.createGoblet()
     this.createBloods()
     this.createCustomer()
+    this.createReputationScoreText()
   }
 
   public static shuffle(array: any[]): any[] {
@@ -99,21 +118,13 @@ export default class Game extends Phaser.Scene {
     return array
   }
 
-  generateRandomCustomer() {
-    const bloodTypes = this.getAllBloodTypes().filter((bloodType) => bloodType !== BloodTypes.HUMAN)
-    const randomBloodTypeOrdering = Game.shuffle(bloodTypes)
-    return new Customer(this, {
+  createCustomer() {
+    this.currCustomer = new Customer(this, {
       position: {
         x: GameConstants.WINDOW_WIDTH / 2,
         y: GameConstants.WINDOW_HEIGHT / 2 + 50,
       },
-      allergyType: randomBloodTypeOrdering[0],
-      affinityType: randomBloodTypeOrdering[1],
     })
-  }
-
-  createCustomer() {
-    this.currCustomer = this.generateRandomCustomer()
   }
 
   selectBlood(blood: Blood) {
@@ -128,34 +139,82 @@ export default class Game extends Phaser.Scene {
   }
 
   initButtons() {
-    const mixButton = new Button(this, {
-      width: 240,
-      height: 60,
+    new Button(this, {
+      width: 200,
+      height: 40,
       text: 'Mix',
       position: {
-        x: 165,
+        x: 140,
         y: 60,
       },
+      fontSize: 20,
       onPress: () => {
         this.goblet.mix()
       },
     })
-    const serveButton = new Button(this, {
-      width: 240,
-      height: 60,
+    new Button(this, {
+      width: 200,
+      height: 40,
       text: 'Serve',
       position: {
-        x: 165,
-        y: 135,
+        x: 140,
+        y: 110,
       },
+      fontSize: 20,
       onPress: () => {
         this.goblet.serve()
       },
     })
+    new Button(this, {
+      width: 200,
+      height: 40,
+      text: 'Dump',
+      position: {
+        x: 140,
+        y: 160,
+      },
+      fontSize: 20,
+      onPress: () => {
+        this.goblet.dump()
+      },
+    })
   }
 
-  evaluateDrink(recipe: BloodTypes[], cb: Function) {
+  addRep(grade: CocktailGrade) {
+    const pointsToAdd = COCKTAIL_GRADE_REP_BONUSES[grade]
+    const sign = pointsToAdd > 0 ? '+' : ''
+    this.addRepText.setText(`${sign}${pointsToAdd}`).setVisible(true).setAlpha(1)
+    this.addRepText.setPosition(
+      GameConstants.WINDOW_WIDTH - this.addRepText.displayWidth - 40,
+      this.reputationText.y + 20
+    )
+    this.tweens.add({
+      targets: [this.addRepText],
+      y: '-=20',
+      alpha: {
+        from: 1,
+        to: 0,
+      },
+      onComplete: () => {
+        this.reputationScore += pointsToAdd
+        this.reputationText
+          .setText(`Rep: ${this.reputationScore}`)
+          .setPosition(GameConstants.WINDOW_WIDTH - this.reputationText.displayWidth - 40, 30)
+        this.addRepText.setPosition(0, this.reputationText.y + 20)
+      },
+    })
+  }
+
+  evaluateDrink(recipe: BloodTypes[]) {
     const grade = this.currCustomer.evaluateDrink(recipe)
-    cb()
+    this.currCustomer.displayReaction(grade as CocktailGrade, () => {
+      this.addRep(grade as CocktailGrade)
+      this.goblet.clearGlassAndReset()
+      if (grade === CocktailGrade.DEAD) {
+        this.currCustomer.die()
+      } else {
+        this.currCustomer.moveAlong()
+      }
+    })
   }
 }

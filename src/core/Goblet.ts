@@ -12,6 +12,7 @@ export interface GobletConfig {
 
 export class Goblet {
   private game: Game
+  private isServing: boolean = false
 
   // TODO: Replace with actual sprite of a goblet
   public sprite!: Phaser.GameObjects.Rectangle
@@ -78,8 +79,17 @@ export class Goblet {
     }
   }
 
+  dump() {
+    this.recipe = []
+    this.currBloodPortionIndex = 0
+    this.bloodPortions.forEach((portion) => {
+      portion.setVisible(false)
+    })
+  }
+
   serve() {
-    if (this.isMixed) {
+    if (this.isMixed && !this.isServing) {
+      this.isServing = true
       this.game.tweens.add({
         targets: [this.sprite, ...this.bloodPortions],
         x: {
@@ -97,9 +107,8 @@ export class Goblet {
             },
             duration: 1000,
             onComplete: () => {
-              this.game.evaluateDrink(this.recipe, () => {
-                this.clearGlassAndReset()
-              })
+              this.isServing = false
+              this.game.evaluateDrink(this.recipe)
             },
           })
         },

@@ -8,5 +8,6 @@ export class GameConstants {
     bar: 100,
     goblet: 200,
     mix: 300,
+    ui: 400,
   }
 }
