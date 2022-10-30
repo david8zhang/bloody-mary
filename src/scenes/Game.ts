@@ -5,7 +5,12 @@ import { Goblet } from '~/core/Goblet'
 import { Blood } from '~/core/Blood'
 import { Button } from '~/ui/Button'
 import { Customer } from '~/core/Customer'
-import { CocktailGrade, COCKTAIL_GRADE_REP_BONUSES } from '~/config/PrefConstants'
+import {
+  CocktailGrade,
+  COCKTAIL_GRADE_REP_BONUSES,
+  TimeGradeTypes,
+  TIME_BONUSES,
+} from '~/config/GradeConstants'
 
 export default class Game extends Phaser.Scene {
   private goblet!: Goblet
@@ -14,6 +19,12 @@ export default class Game extends Phaser.Scene {
   private reputationScore: number = 100
   private reputationText!: Phaser.GameObjects.Text
   private addRepText!: Phaser.GameObjects.Text
+  private addBonusRepText!: Phaser.GameObjects.Text
+
+  // Timer
+  private timer: number = 0
+  private timerEvent!: Phaser.Time.TimerEvent
+  private timerText!: Phaser.GameObjects.Text
 
   // Bar
   private barTop!: Phaser.GameObjects.Rectangle
@@ -24,10 +35,15 @@ export default class Game extends Phaser.Scene {
   public selectedBlood: Blood | null = null
 
   // Current customer
+  public assetMappings: any = {}
   private currCustomer!: Customer
 
   constructor() {
     super('game')
+  }
+
+  init(data: { assetMappings: any }) {
+    this.assetMappings = data.assetMappings
   }
 
   initGameScale() {
@@ -57,6 +73,32 @@ export default class Game extends Phaser.Scene {
     })
   }
 
+  createTimerText() {
+    this.timerText = this.add
+      .text(
+        GameConstants.WINDOW_WIDTH - this.reputationText.displayWidth - 40,
+        30,
+        `Time: ${this.timer}s`
+      )
+      .setFontSize(20)
+    this.timerText.setPosition(this.reputationText.x - this.reputationText.displayWidth - 30, 30)
+    this.timerEvent = this.time.addEvent({
+      repeat: -1,
+      delay: 1000,
+      callback: () => {
+        this.timer++
+        this.updateTimerText()
+      },
+      paused: true,
+    })
+  }
+
+  updateTimerText() {
+    this.timerText
+      .setText(`Time: ${this.timer}s`)
+      .setPosition(this.reputationText.x - this.timerText.displayWidth - 30, 30)
+  }
+
   createReputationScoreText() {
     this.reputationText = this.add
       .text(GameConstants.WINDOW_WIDTH - 20, 40, `Rep: ${this.reputationScore}`)
@@ -67,6 +109,9 @@ export default class Game extends Phaser.Scene {
     )
     this.addRepText = this.add
       .text(GameConstants.WINDOW_WIDTH - 40, this.reputationText.y + 20, '')
+      .setFontSize(18)
+    this.addBonusRepText = this.add
+      .text(this.addRepText.x, this.addRepText.y + 20, '')
       .setFontSize(18)
   }
 
@@ -101,6 +146,7 @@ export default class Game extends Phaser.Scene {
     this.createBloods()
     this.createCustomer()
     this.createReputationScoreText()
+    this.createTimerText()
   }
 
   public static shuffle(array: any[]): any[] {
@@ -122,7 +168,10 @@ export default class Game extends Phaser.Scene {
     this.currCustomer = new Customer(this, {
       position: {
         x: GameConstants.WINDOW_WIDTH / 2,
-        y: GameConstants.WINDOW_HEIGHT / 2 + 50,
+        y: GameConstants.WINDOW_HEIGHT / 2 - 60,
+      },
+      onOrder: () => {
+        this.timerEvent.paused = false
       },
     })
   }
@@ -162,6 +211,7 @@ export default class Game extends Phaser.Scene {
       },
       fontSize: 20,
       onPress: () => {
+        this.timerEvent.paused = true
         this.goblet.serve()
       },
     })
@@ -180,14 +230,44 @@ export default class Game extends Phaser.Scene {
     })
   }
 
-  addRep(grade: CocktailGrade) {
+  addRep(grade: CocktailGrade, timeGrade: TimeGradeTypes) {
     const pointsToAdd = COCKTAIL_GRADE_REP_BONUSES[grade]
+    let bonusPoints = 0
+    if (grade !== CocktailGrade.DEAD) {
+      bonusPoints = TIME_BONUSES[timeGrade]
+      if (grade === CocktailGrade.F || grade === CocktailGrade.D) {
+        bonusPoints = Math.min(0, bonusPoints)
+      }
+    }
     const sign = pointsToAdd > 0 ? '+' : ''
     this.addRepText.setText(`${sign}${pointsToAdd}`).setVisible(true).setAlpha(1)
     this.addRepText.setPosition(
       GameConstants.WINDOW_WIDTH - this.addRepText.displayWidth - 40,
       this.reputationText.y + 20
     )
+
+    const bonusSign = bonusPoints > 0 ? '+' : ''
+    this.addBonusRepText
+      .setText(`${bonusSign}${bonusPoints}`)
+      .setVisible(true)
+      .setAlpha(1)
+      .setVisible(bonusPoints !== 0)
+    this.addBonusRepText.setPosition(this.addRepText.x, this.addRepText.y + 20)
+
+    const addRepCb = () => {
+      this.reputationScore += pointsToAdd + bonusPoints
+      this.reputationText
+        .setText(`Rep: ${this.reputationScore}`)
+        .setPosition(GameConstants.WINDOW_WIDTH - this.reputationText.displayWidth - 40, 30)
+      this.addRepText.setPosition(0, this.reputationText.y + 20)
+      if (this.reputationScore <= 0) {
+        this.cameras.main.fadeOut(1000, 0, 0, 0)
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
+          this.scene.start('game-over')
+        })
+      }
+    }
+
     this.tweens.add({
       targets: [this.addRepText],
       y: '-=20',
@@ -196,19 +276,47 @@ export default class Game extends Phaser.Scene {
         to: 0,
       },
       onComplete: () => {
-        this.reputationScore += pointsToAdd
-        this.reputationText
-          .setText(`Rep: ${this.reputationScore}`)
-          .setPosition(GameConstants.WINDOW_WIDTH - this.reputationText.displayWidth - 40, 30)
-        this.addRepText.setPosition(0, this.reputationText.y + 20)
+        if (bonusPoints === 0) {
+          addRepCb()
+        }
+      },
+    })
+    this.tweens.add({
+      delay: 100,
+      targets: [this.addBonusRepText],
+      y: '-=20',
+      alpha: {
+        from: 1,
+        to: 0,
+      },
+      onComplete: () => {
+        if (bonusPoints !== 0) {
+          addRepCb()
+        }
       },
     })
   }
 
+  getTimeGrade(timeToComplete: number) {
+    if (timeToComplete > 0 && timeToComplete < 10) {
+      return TimeGradeTypes.LIGHTNING
+    } else if (timeToComplete > 10 && timeToComplete < 20) {
+      return TimeGradeTypes.FAST
+    } else if (timeToComplete > 20 && timeToComplete < 30) {
+      return TimeGradeTypes.AVERAGE
+    } else {
+      return TimeGradeTypes.SLOW
+    }
+  }
+
   evaluateDrink(recipe: BloodTypes[]) {
+    const timeToComplete = this.timer
+    this.timer = 0
+    this.updateTimerText()
     const grade = this.currCustomer.evaluateDrink(recipe)
+    const timeGrade = this.getTimeGrade(timeToComplete)
     this.currCustomer.displayReaction(grade as CocktailGrade, () => {
-      this.addRep(grade as CocktailGrade)
+      this.addRep(grade as CocktailGrade, timeGrade)
       this.goblet.clearGlassAndReset()
       if (grade === CocktailGrade.DEAD) {
         this.currCustomer.die()

@@ -24,7 +24,7 @@ export class Blood {
   createSprite(config: BloodConfig) {
     const { position } = config
     const mixBottleWidth = 60
-    const mixBottleHeight = 120
+    const mixBottleHeight = 150
     const sprite = this.game.add.rectangle(position.x, position.y, mixBottleWidth, mixBottleHeight)
     sprite.setFillStyle(BLOOD_TYPE_TO_COLOR[config.bloodType], 0.75)
     sprite.setStrokeStyle(2, 0xffffff)

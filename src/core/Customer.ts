@@ -1,8 +1,7 @@
 import { BloodTypes, BLOOD_TYPE_TO_COLOR } from '~/config/BloodTypes'
 import { GameConstants } from '~/config/GameConstants'
+import { CocktailGrade, COCKTAIL_GRADE_LINES } from '~/config/GradeConstants'
 import {
-  CocktailGrade,
-  COCKTAIL_GRADE_LINES,
   LevelTypes,
   LEVEL_ADJECTIVES,
   LEVEL_TO_PERCENTAGE_MAPPING,
@@ -16,13 +15,14 @@ export interface CustomerConfig {
     x: number
     y: number
   }
+  onOrder: Function
 }
 
 export class Customer {
   private static readonly MOVE_DURATION = 1250
 
   private game: Game
-  private sprite!: Phaser.GameObjects.Sprite
+  private spriteMapping: any = {}
   private eyes: Phaser.GameObjects.Arc[] = []
   private defaultPosition: { x: number; y: number }
 
@@ -30,12 +30,14 @@ export class Customer {
   private allergyType!: BloodTypes
   private preferenceMap: any = {}
   private preferenceLineText: Phaser.GameObjects.Text
+  private onOrder: Function
 
   constructor(game: Game, config: CustomerConfig) {
     this.game = game
     const { position } = config
     this.defaultPosition = position
-    this.createSprite(position)
+    this.onOrder = config.onOrder
+    this.createSprites(position)
 
     this.preferenceLineText = this.game.add
       .text(
@@ -50,28 +52,34 @@ export class Customer {
     this.reset()
   }
 
-  createSprite(position: { x: number; y: number }) {
-    const outfitColor = BLOOD_TYPE_TO_COLOR[this.affinityType]
-    const eyeColor = BLOOD_TYPE_TO_COLOR[this.allergyType]
+  public get sprite() {
+    const sprites = Object.keys(this.spriteMapping).map((key) => this.spriteMapping[key])
+    return sprites[0]
+  }
 
-    this.sprite = this.game.add
-      .sprite(position.x, position.y, 'sample-vampire')
-      .setScale(1)
-      .setTint(outfitColor)
-    const leftEye = this.game.add.circle(
-      position.x - 10,
-      position.y - this.sprite.displayHeight / 2 + 90,
-      8,
-      eyeColor
-    )
-    const rightEye = this.game.add.circle(
-      position.x + 35,
-      position.y - this.sprite.displayHeight / 2 + 91,
-      8,
-      eyeColor
-    )
-    this.eyes.push(leftEye)
-    this.eyes.push(rightEye)
+  createSprites(position: { x: number; y: number }) {
+    const spriteLayers = ['face', 'eyes', 'outfit', 'hair']
+    spriteLayers.forEach((layer: string) => {
+      const newSprite = this.game.add.sprite(position.x, position.y, '')
+      this.spriteMapping[`${layer}`] = newSprite
+    })
+  }
+
+  resetSpriteTextures() {
+    const affinityPath = this.affinityType.toLowerCase()
+    const allergyPath = this.allergyType.toLowerCase()
+    const gender = 'male'
+    Object.keys(this.spriteMapping).forEach((layer) => {
+      let allKeysForLayer = this.game.assetMappings[`${gender}`][`${layer}`]
+      if (layer === 'eyes') {
+        allKeysForLayer = allKeysForLayer[`${allergyPath}`]
+      }
+      if (layer === 'outfit') {
+        allKeysForLayer = allKeysForLayer[`${affinityPath}`]
+      }
+      const randomKey = allKeysForLayer[Phaser.Math.Between(0, allKeysForLayer.length - 1)]
+      this.spriteMapping[`${layer}`].setTexture(randomKey)
+    })
   }
 
   evaluateDrink(recipe: BloodTypes[]) {
@@ -192,13 +200,12 @@ export class Customer {
   }
 
   displayPreferenceLines() {
-    const preferenceLines = this.generatePreferenceLines().join('\n\n')
+    const preferenceLines = this.generatePreferenceLines()
+    const prefLineText = preferenceLines.join('\n\n')
+    const yOffset = preferenceLines.length == 2 ? -225 : -245
     this.preferenceLineText
-      .setText(preferenceLines)
-      .setPosition(
-        this.defaultPosition.x + this.sprite.displayWidth / 2 - 50,
-        this.defaultPosition.y - this.sprite.displayHeight / 2 + 50
-      )
+      .setText(prefLineText)
+      .setPosition(this.defaultPosition.x + 165, this.defaultPosition.y + yOffset)
       .setVisible(true)
       .setWordWrapWidth(GameConstants.WINDOW_WIDTH - this.preferenceLineText.x - 20)
   }
@@ -247,8 +254,9 @@ export class Customer {
   }
 
   die() {
+    const sprites = Object.keys(this.spriteMapping).map((key) => this.spriteMapping[key])
     this.game.tweens.add({
-      targets: [this.sprite, ...this.eyes],
+      targets: sprites,
       alpha: {
         from: 1,
         to: 0,
@@ -261,8 +269,9 @@ export class Customer {
   }
 
   moveAlong() {
+    const sprites = Object.keys(this.spriteMapping).map((key) => this.spriteMapping[key])
     this.game.tweens.add({
-      targets: [this.sprite, ...this.eyes],
+      targets: sprites,
       x: `-=${GameConstants.WINDOW_WIDTH * 0.75}`,
       duration: Customer.MOVE_DURATION * 1.25,
       onComplete: () => {
@@ -272,31 +281,28 @@ export class Customer {
   }
 
   reset() {
-    const offset = GameConstants.WINDOW_WIDTH / 2 + 150
-    this.sprite.setPosition(this.defaultPosition.x + offset, this.defaultPosition.y).setAlpha(1)
-    const leftEye = this.eyes[0]
-    const rightEye = this.eyes[1]
-    leftEye.setPosition(this.defaultPosition.x - 10 + offset, leftEye.y).setAlpha(1)
-    rightEye.setPosition(this.defaultPosition.x + 35 + offset, rightEye.y).setAlpha(1)
+    const offset = GameConstants.WINDOW_WIDTH / 2 + 200
+    const sprites = Object.keys(this.spriteMapping).map((key) => this.spriteMapping[key])
+    sprites.forEach((sprite) => {
+      sprite.setPosition(this.defaultPosition.x + offset, this.defaultPosition.y).setAlpha(1)
+    })
     const bloodTypes = this.game
       .getAllBloodTypes()
       .filter((bloodType) => bloodType !== BloodTypes.HUMAN)
     const randomBloodTypeOrdering = Game.shuffle(bloodTypes)
     this.affinityType = randomBloodTypeOrdering[0]
     this.allergyType = randomBloodTypeOrdering[1]
-    this.sprite.setTint(BLOOD_TYPE_TO_COLOR[this.affinityType])
-    this.eyes.forEach((eye) => {
-      eye.setFillStyle(BLOOD_TYPE_TO_COLOR[this.allergyType])
-    })
+    this.resetSpriteTextures()
     this.game.tweens.add({
       delay: 1000,
-      targets: [this.sprite, ...this.eyes],
+      targets: sprites,
       x: `-=${offset}`,
       duration: Customer.MOVE_DURATION,
       onComplete: () => {
         this.preferenceLineText.setAlpha(1).setFontSize(18)
         this.generatePreferences()
         this.displayPreferenceLines()
+        this.onOrder()
       },
     })
   }
