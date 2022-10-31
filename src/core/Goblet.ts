@@ -21,7 +21,7 @@ export class Goblet {
   // Blood portions after pouring
   private bloodPortions: Phaser.GameObjects.Rectangle[] = []
   private currBloodPortionIndex: number = 0
-  private maxBloodPortions: number = 8
+  private maxBloodPortions: number = 4
   private recipe: BloodTypes[] = []
 
   // Only allow serving after the drink has been mixed
@@ -46,7 +46,7 @@ export class Goblet {
   createBloodPortions() {
     const height = (192 - 3) / this.maxBloodPortions
     const width = 90 - 6
-    let yPos = this.sprite.y + this.sprite.displayHeight / 2 - 20
+    let yPos = this.sprite.y + this.sprite.displayHeight / 2 - 30
     const xPos = this.sprite.x
     for (let i = 0; i < this.maxBloodPortions; i++) {
       const portion = this.game.add

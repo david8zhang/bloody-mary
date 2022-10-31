@@ -24,7 +24,7 @@ const GUIDE_PAGES = [
     title: '2. How to pour orders',
     lines: [
       "The customer's order will determine how much to pour",
-      'Each pour(click) is 1/8 of a glass.',
+      'Each pour(click) is 1/4 of a glass.',
       'You must fill the glass and mix it first in order to serve!',
     ],
   },
