@@ -69,6 +69,10 @@ export default class Preload extends Phaser.Scene {
         }
       })
     })
+
+    allBloodTypePathNames.forEach((bloodType) => {
+      this.load.image(`bartender-${bloodType}`, `mentor/bartender-${bloodType}.png`)
+    })
   }
 
   loadHair() {

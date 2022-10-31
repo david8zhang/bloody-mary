@@ -15,15 +15,16 @@ const GUIDE_PAGES = [
   {
     title: '1. General tips',
     lines: [
-      '- Speed is of the essence! As you become more reputable, customers will have higher expectations!',
-      "- Don't overpour dangerous allergens!",
-      '- Your reputation is everything!',
+      'Speed is of the essence! As you become more reputable, customers will have higher expectations!',
+      "Don't overpour dangerous allergens!",
+      'Your reputation is everything!',
     ],
   },
   {
     title: '2. How to pour orders',
     lines: [
-      'Pay attention to certain words! (not a comprehensive list)',
+      'Pay attention to certain words!',
+      'Each pour is 1/8 of a glass.',
       'Quarter Glass: slightly, lightly, a bit, vaguely, a shade',
       'Half Glass: fairly, moderately, kind of, pretty, more or less',
       'Three Quarters Glass: heavily, intensely, mostly, seriously, very',
@@ -44,7 +45,7 @@ const GUIDE_PAGES = [
     lines: [
       'Tastes match up with the outfit of the customer!',
       'Customer might ask for something "delicious", "flavorful", or "pleasant"',
-      'If they want something "normal" or "classic", serve up the standard human blood! It never fails to please the old-fashioned types...',
+      'If they want something "normal", "classic", "no frills", or "standard" serve up the standard human blood! It never fails to please the old-fashioned types...',
     ],
   },
 ]

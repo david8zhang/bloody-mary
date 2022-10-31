@@ -7,15 +7,17 @@ import { Button } from '~/ui/Button'
 import { Customer } from '~/core/Customer'
 import { CocktailGrade, COCKTAIL_GRADE_REP_BONUSES } from '~/config/GradeConstants'
 import { Guide } from '~/core/Guide'
+import { Mentor } from '~/core/Mentor'
 
 export default class Game extends Phaser.Scene {
   private goblet!: Goblet
   private guide!: Guide
+  public guideOnTable!: Phaser.GameObjects.Sprite
   public isShowingGuide: boolean = false
 
   // Reputation
   private reputationScore: number = 100
-  private reputationText!: Phaser.GameObjects.Text
+  public reputationText!: Phaser.GameObjects.Text
   private addRepText!: Phaser.GameObjects.Text
 
   // Num patrons served
@@ -25,14 +27,14 @@ export default class Game extends Phaser.Scene {
   private maxCountdown = 45
   private timer: number = this.maxCountdown
   private timerEvent!: Phaser.Time.TimerEvent
-  private timerText!: Phaser.GameObjects.Text
+  public timerText!: Phaser.GameObjects.Text
   public numPatronsServed: number = 0
 
   // Bar
   private barTop!: Phaser.GameObjects.Sprite
 
   // Blood Types to choose from
-  private bloods: Blood[] = []
+  public bloods: Blood[] = []
   public selectedBlood: Blood | null = null
 
   // Current customer
@@ -136,13 +138,14 @@ export default class Game extends Phaser.Scene {
     let xPos = 60
     const yPos = this.barTop.y + 250
     bloodTypes.forEach((bloodType: string) => {
-      new Blood(this, {
+      const blood = new Blood(this, {
         position: {
           x: xPos,
           y: yPos,
         },
         bloodType: bloodType as BloodTypes,
       })
+      this.bloods.push(blood)
       xPos += 100
     })
   }
@@ -160,16 +163,21 @@ export default class Game extends Phaser.Scene {
     this.createBar()
     this.createGoblet()
     this.createBloods()
-    this.createCustomer()
+    // this.createCustomer()
+    this.createMentor()
     this.createReputationScoreText()
     this.createTimerText()
     this.createGuide()
     this.createNumPatronsServed()
   }
 
+  createMentor() {
+    const mentor = new Mentor(this)
+  }
+
   createGuide() {
     this.guide = new Guide(this, false)
-    const guideOnTable = this.add
+    this.guideOnTable = this.add
       .sprite(GameConstants.WINDOW_WIDTH - 120, GameConstants.WINDOW_HEIGHT - 140, 'guide')
       .setDepth(GameConstants.SORT_ORDER.ui)
       .setInteractive()
@@ -179,13 +187,13 @@ export default class Game extends Phaser.Scene {
         this.guide.show()
       })
     const guideText = this.add
-      .text(guideOnTable.x, guideOnTable.y - 75, 'Vampire\nBartending\n101')
+      .text(this.guideOnTable.x, this.guideOnTable.y - 75, 'Vampire\nBartending\n101')
       .setDepth(GameConstants.SORT_ORDER.ui)
       .setAlign('center')
       .setFontSize(18)
       .setFontFamily('Alagard')
     guideText
-      .setPosition(guideOnTable.x - guideText.displayWidth / 2 + 15, guideOnTable.y - 75)
+      .setPosition(this.guideOnTable.x - guideText.displayWidth / 2 + 15, this.guideOnTable.y - 75)
       .setStroke('#000000', 4)
   }
 
