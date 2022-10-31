@@ -88,7 +88,7 @@ export class Goblet {
   }
 
   serve() {
-    if (this.isMixed && !this.isServing) {
+    if (!this.isServing) {
       this.isServing = true
       this.game.tweens.add({
         targets: [this.sprite, ...this.bloodPortions],

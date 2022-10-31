@@ -10,6 +10,9 @@ export interface ButtonConfig {
     y: number
   }
   fontSize: number
+  depth?: number
+  bgColor?: number
+  textColor?: number
 }
 
 export class Button {
@@ -18,8 +21,14 @@ export class Button {
 
   constructor(scene: Phaser.Scene, buttonConfig: ButtonConfig) {
     this.buttonRect = scene.add
-      .rectangle(0, 0, buttonConfig.width, buttonConfig.height, 0x000000)
-      .setStrokeStyle(2, 0xffffff)
+      .rectangle(
+        0,
+        0,
+        buttonConfig.width,
+        buttonConfig.height,
+        buttonConfig.bgColor ? buttonConfig.bgColor : 0x000000
+      )
+      .setStrokeStyle(2, buttonConfig.textColor != undefined ? buttonConfig.textColor : 0xffffff)
       .setDepth(GameConstants.SORT_ORDER.ui)
     this.buttonRect
       .setPosition(buttonConfig.position.x, buttonConfig.position.y)
@@ -33,19 +42,22 @@ export class Button {
       .on(Phaser.Input.Events.POINTER_DOWN, () => {
         buttonConfig.onPress()
       })
-      .setDepth(GameConstants.SORT_ORDER.ui)
+      .setDepth(buttonConfig.depth ? buttonConfig.depth : GameConstants.SORT_ORDER.ui)
 
     this.buttonText = scene.add
       .text(this.buttonRect.x, this.buttonRect.y, buttonConfig.text, {
         fontSize: `${buttonConfig.fontSize}px`,
       })
-      .setDepth(GameConstants.SORT_ORDER.ui)
+      .setDepth(buttonConfig.depth ? buttonConfig.depth : GameConstants.SORT_ORDER.ui)
     this.buttonText
       .setPosition(
         this.buttonRect.x - this.buttonText.displayWidth / 2,
         this.buttonRect.y - this.buttonText.displayHeight / 2
       )
-      .setDepth(GameConstants.SORT_ORDER.ui)
+      .setDepth(buttonConfig.depth ? buttonConfig.depth : GameConstants.SORT_ORDER.ui)
+      .setColor(
+        buttonConfig.textColor != undefined ? buttonConfig.textColor.toString(16) : '#ffffff'
+      )
   }
 
   setVisible(isVisible: boolean) {

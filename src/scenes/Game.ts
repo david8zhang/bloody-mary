@@ -11,9 +11,12 @@ import {
   TimeGradeTypes,
   TIME_BONUSES,
 } from '~/config/GradeConstants'
+import { Guide } from '~/core/Guide'
 
 export default class Game extends Phaser.Scene {
   private goblet!: Goblet
+  private guide!: Guide
+  public isShowingGuide: boolean = false
 
   // Reputation
   private reputationScore: number = 100
@@ -147,6 +150,31 @@ export default class Game extends Phaser.Scene {
     this.createCustomer()
     this.createReputationScoreText()
     this.createTimerText()
+    this.createGuide()
+  }
+
+  createGuide() {
+    this.guide = new Guide(this, false)
+    const guideOnTable = this.add
+      .rectangle(
+        GameConstants.WINDOW_WIDTH - 100,
+        GameConstants.WINDOW_HEIGHT - 130,
+        150,
+        200,
+        0x000000
+      )
+      .setDepth(GameConstants.SORT_ORDER.ui)
+      .setInteractive()
+      .on('pointerdown', () => {
+        this.isShowingGuide = true
+        this.guide.show()
+      })
+    const guideText = this.add
+      .text(guideOnTable.x, guideOnTable.y - 75, 'Vampire\nBartending\n101')
+      .setDepth(GameConstants.SORT_ORDER.ui)
+      .setAlign('center')
+      .setFontSize(18)
+    guideText.setPosition(guideOnTable.x - guideText.displayWidth / 2, guideOnTable.y - 75)
   }
 
   public static shuffle(array: any[]): any[] {
@@ -184,7 +212,9 @@ export default class Game extends Phaser.Scene {
   }
 
   pourBlood() {
-    if (this.selectedBlood) this.goblet.pour(this.selectedBlood)
+    if (this.selectedBlood && !this.isShowingGuide) {
+      this.goblet.pour(this.selectedBlood)
+    }
   }
 
   initButtons() {
@@ -198,7 +228,9 @@ export default class Game extends Phaser.Scene {
       },
       fontSize: 20,
       onPress: () => {
-        this.goblet.mix()
+        if (!this.isShowingGuide) {
+          this.goblet.mix()
+        }
       },
     })
     new Button(this, {
@@ -211,8 +243,10 @@ export default class Game extends Phaser.Scene {
       },
       fontSize: 20,
       onPress: () => {
-        this.timerEvent.paused = true
-        this.goblet.serve()
+        if (!this.isShowingGuide && this.goblet.isMixed) {
+          this.timerEvent.paused = true
+          this.goblet.serve()
+        }
       },
     })
     new Button(this, {
@@ -225,7 +259,9 @@ export default class Game extends Phaser.Scene {
       },
       fontSize: 20,
       onPress: () => {
-        this.goblet.dump()
+        if (!this.isShowingGuide) {
+          this.goblet.dump()
+        }
       },
     })
   }

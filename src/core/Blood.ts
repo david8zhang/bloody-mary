@@ -30,7 +30,9 @@ export class Blood {
     sprite.setStrokeStyle(2, 0xffffff)
     sprite.setInteractive()
     sprite.on('pointerdown', () => {
-      this.selectBlood()
+      if (!this.game.isShowingGuide) {
+        this.selectBlood()
+      }
     })
     sprite.setDepth(GameConstants.SORT_ORDER.mix)
     return sprite
