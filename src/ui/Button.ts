@@ -48,6 +48,7 @@ export class Button {
     this.buttonText = scene.add
       .text(this.buttonRect.x, this.buttonRect.y, buttonConfig.text, {
         fontSize: `${buttonConfig.fontSize}px`,
+        fontFamily: 'Alagard',
       })
       .setDepth(buttonConfig.depth ? buttonConfig.depth : GameConstants.SORT_ORDER.ui)
     this.buttonText

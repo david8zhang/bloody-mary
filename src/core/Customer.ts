@@ -1,6 +1,6 @@
 import { BloodTypes, BLOOD_TYPE_TO_COLOR } from '~/config/BloodTypes'
 import { GameConstants } from '~/config/GameConstants'
-import { CocktailGrade, COCKTAIL_GRADE_LINES } from '~/config/GradeConstants'
+import { CocktailGrade, COCKTAIL_GRADE_LINES, TIMEOUT_LINES } from '~/config/GradeConstants'
 import {
   LevelTypes,
   LEVEL_ADJECTIVES,
@@ -46,7 +46,7 @@ export class Customer {
         ''
       )
       .setStyle({
-        fontSize: '18px',
+        fontSize: '25px',
         color: 'white',
       })
     this.reset()
@@ -205,9 +205,11 @@ export class Customer {
     const yOffset = preferenceLines.length == 2 ? -225 : -245
     this.preferenceLineText
       .setText(prefLineText)
-      .setPosition(this.defaultPosition.x + 165, this.defaultPosition.y + yOffset)
+      .setPosition(this.defaultPosition.x + 150, this.defaultPosition.y + yOffset)
       .setVisible(true)
       .setWordWrapWidth(GameConstants.WINDOW_WIDTH - this.preferenceLineText.x - 20)
+      .setFontFamily('Alagard')
+      .setFontSize(25)
   }
 
   generatePreferences() {
@@ -310,6 +312,27 @@ export class Customer {
   displayReaction(grade: CocktailGrade, cb: Function) {
     const lines = COCKTAIL_GRADE_LINES[grade]
     const randLine = lines[Phaser.Math.Between(0, lines.length - 1)]
+    this.preferenceLineText.setText(randLine).setFontSize(30)
+    this.game.tweens.add({
+      delay: 2000,
+      targets: [this.preferenceLineText],
+      alpha: {
+        from: 1,
+        to: 0,
+      },
+      y: {
+        from: this.preferenceLineText.y,
+        to: this.preferenceLineText.y - 10,
+      },
+      duration: 500,
+      onComplete: () => {
+        cb()
+      },
+    })
+  }
+
+  timeout(cb: Function) {
+    const randLine = TIMEOUT_LINES[Phaser.Math.Between(0, TIMEOUT_LINES.length - 1)]
     this.preferenceLineText.setText(randLine).setFontSize(30)
     this.game.tweens.add({
       delay: 2000,

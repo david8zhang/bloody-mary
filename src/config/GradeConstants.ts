@@ -16,6 +16,16 @@ export const COCKTAIL_GRADE_REP_BONUSES = {
   [CocktailGrade.DEAD]: -200,
 }
 
+export const TIMEOUT_LINES = [
+  "Sorry ma'am, I don't have all day",
+  "Could you be any slower? I'm out of here!",
+  'You need some more practice!',
+  'I have places to be.',
+  "Sorry, I don't have time for this",
+  'Come on! You need to hurry next time!',
+  "I'm here to drink not to wait!",
+]
+
 export const COCKTAIL_GRADE_LINES = {
   [CocktailGrade.A]: [
     'Amazing!',

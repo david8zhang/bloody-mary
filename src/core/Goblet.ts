@@ -15,7 +15,7 @@ export class Goblet {
   private isServing: boolean = false
 
   // TODO: Replace with actual sprite of a goblet
-  public sprite!: Phaser.GameObjects.Rectangle
+  public sprite!: Phaser.GameObjects.Sprite
   public defaultPosition: { x: number; y: number }
 
   // Blood portions after pouring
@@ -35,26 +35,24 @@ export class Goblet {
   }
 
   createSprite(pos: { x: number; y: number }) {
-    this.sprite = this.game.add.rectangle(pos.x, pos.y, 90, 192)
-    this.sprite.setStrokeStyle(6, 0xffffff)
-    this.sprite.setFillStyle(0x000, 0.4)
+    this.sprite = this.game.add.sprite(pos.x, pos.y, 'glass').setScale(1.2, 1.2)
     this.sprite.setInteractive()
-    this.sprite.setDepth(GameConstants.SORT_ORDER.goblet)
+    this.sprite.setDepth(GameConstants.SORT_ORDER.goblet + 5)
     this.sprite.on('pointerdown', () => {
       this.game.pourBlood()
     })
   }
 
   createBloodPortions() {
-    const height = (this.sprite.displayHeight - 3) / this.maxBloodPortions
-    const width = this.sprite.displayWidth - 6
-    let yPos = this.sprite.y + this.sprite.displayHeight / 2 - height / 2 - 1
+    const height = (192 - 3) / this.maxBloodPortions
+    const width = 90 - 6
+    let yPos = this.sprite.y + this.sprite.displayHeight / 2 - 20
     const xPos = this.sprite.x
     for (let i = 0; i < this.maxBloodPortions; i++) {
       const portion = this.game.add
         .rectangle(xPos, yPos, width, height)
         .setVisible(false)
-        .setDepth(GameConstants.SORT_ORDER.goblet + 5)
+        .setDepth(GameConstants.SORT_ORDER.goblet)
       yPos -= height
       this.bloodPortions.push(portion)
     }

@@ -18,6 +18,8 @@ export default class Preload extends Phaser.Scene {
     this.loadBloodTypes()
     this.loadTable()
     this.loadBartenderOutfit()
+    this.loadGuide()
+    this.loadGlass()
   }
 
   getAllBloodTypePathNames() {
@@ -93,6 +95,14 @@ export default class Preload extends Phaser.Scene {
 
   loadBartenderOutfit() {
     this.load.image('bartender', 'bartender.png')
+  }
+
+  loadGuide() {
+    this.load.image('guide', 'guide.png')
+  }
+
+  loadGlass() {
+    this.load.image('glass', 'glass.png')
   }
 
   create() {

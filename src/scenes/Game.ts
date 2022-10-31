@@ -24,10 +24,15 @@ export default class Game extends Phaser.Scene {
   private addRepText!: Phaser.GameObjects.Text
   private addBonusRepText!: Phaser.GameObjects.Text
 
+  // Num patrons served
+  private numPatronsServedText!: Phaser.GameObjects.Text
+
   // Timer
-  private timer: number = 0
+  private maxCountdown = 45
+  private timer: number = this.maxCountdown
   private timerEvent!: Phaser.Time.TimerEvent
   private timerText!: Phaser.GameObjects.Text
+  public numPatronsServed: number = 0
 
   // Bar
   private barTop!: Phaser.GameObjects.Sprite
@@ -75,28 +80,46 @@ export default class Game extends Phaser.Scene {
         `Time: ${this.timer}s`
       )
       .setFontSize(20)
-    this.timerText.setPosition(this.reputationText.x - this.reputationText.displayWidth - 30, 30)
+      .setFontFamily('Alagard')
+    this.timerText.setPosition(this.reputationText.x - this.timerText.displayWidth - 30, 30)
     this.timerEvent = this.time.addEvent({
       repeat: -1,
       delay: 1000,
       callback: () => {
-        this.timer++
+        this.timer--
         this.updateTimerText()
+        if (this.timer === 0) {
+          this.customerTimeout()
+        }
       },
       paused: true,
     })
   }
 
   updateTimerText() {
-    this.timerText
-      .setText(`Time: ${this.timer}s`)
-      .setPosition(this.reputationText.x - this.timerText.displayWidth - 30, 30)
+    if (this.timer >= 0) {
+      this.timerText
+        .setText(`Time: ${this.timer}s`)
+        .setPosition(this.reputationText.x - this.timerText.displayWidth - 30, 30)
+    }
+  }
+
+  createNumPatronsServed() {
+    this.numPatronsServedText = this.add
+      .text(this.timerText.x, this.timerText.y, 'Served: 0')
+      .setFontSize(20)
+      .setFontFamily('Alagard')
+    this.numPatronsServedText.setPosition(
+      this.timerText.x - this.numPatronsServedText.displayWidth - 30,
+      30
+    )
   }
 
   createReputationScoreText() {
     this.reputationText = this.add
       .text(GameConstants.WINDOW_WIDTH - 20, 40, `Rep: ${this.reputationScore}`)
       .setFontSize(20)
+      .setFontFamily('Alagard')
     this.reputationText.setPosition(
       GameConstants.WINDOW_WIDTH - this.reputationText.displayWidth - 40,
       30
@@ -104,9 +127,11 @@ export default class Game extends Phaser.Scene {
     this.addRepText = this.add
       .text(GameConstants.WINDOW_WIDTH - 40, this.reputationText.y + 20, '')
       .setFontSize(18)
+      .setFontFamily('Alagard')
     this.addBonusRepText = this.add
       .text(this.addRepText.x, this.addRepText.y + 20, '')
       .setFontSize(18)
+      .setFontFamily('Alagard')
   }
 
   getAllBloodTypes(): BloodTypes[] {
@@ -128,7 +153,7 @@ export default class Game extends Phaser.Scene {
         },
         bloodType: bloodType as BloodTypes,
       })
-      xPos += 75
+      xPos += 100
     })
   }
 
@@ -142,22 +167,18 @@ export default class Game extends Phaser.Scene {
     this.createReputationScoreText()
     this.createTimerText()
     this.createGuide()
+    this.createNumPatronsServed()
   }
 
   createGuide() {
     this.guide = new Guide(this, false)
     const guideOnTable = this.add
-      .rectangle(
-        GameConstants.WINDOW_WIDTH - 100,
-        GameConstants.WINDOW_HEIGHT - 130,
-        150,
-        200,
-        0x000000
-      )
+      .sprite(GameConstants.WINDOW_WIDTH - 120, GameConstants.WINDOW_HEIGHT - 140, 'guide')
       .setDepth(GameConstants.SORT_ORDER.ui)
       .setInteractive()
       .on('pointerdown', () => {
         this.isShowingGuide = true
+        this.timerEvent.paused = true
         this.guide.show()
       })
     const guideText = this.add
@@ -165,7 +186,16 @@ export default class Game extends Phaser.Scene {
       .setDepth(GameConstants.SORT_ORDER.ui)
       .setAlign('center')
       .setFontSize(18)
-    guideText.setPosition(guideOnTable.x - guideText.displayWidth / 2, guideOnTable.y - 75)
+      .setFontFamily('Alagard')
+    guideText
+      .setPosition(guideOnTable.x - guideText.displayWidth / 2 + 15, guideOnTable.y - 75)
+      .setStroke('#000000', 4)
+  }
+
+  handleCloseGuide() {
+    this.isShowingGuide = false
+    this.guide.hide()
+    this.timerEvent.paused = false
   }
 
   public static shuffle(array: any[]): any[] {
@@ -257,6 +287,20 @@ export default class Game extends Phaser.Scene {
     })
   }
 
+  handleRepTracking(pointsToAdd: number) {
+    this.reputationScore += pointsToAdd
+    this.reputationText
+      .setText(`Rep: ${this.reputationScore}`)
+      .setPosition(GameConstants.WINDOW_WIDTH - this.reputationText.displayWidth - 40, 30)
+    this.addRepText.setPosition(0, this.reputationText.y + 20)
+    if (this.reputationScore <= 0) {
+      this.cameras.main.fadeOut(1000, 0, 0, 0)
+      this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
+        this.scene.start('game-over', { numPatronsServed: this.numPatronsServed })
+      })
+    }
+  }
+
   addRep(grade: CocktailGrade, timeGrade: TimeGradeTypes) {
     const pointsToAdd = COCKTAIL_GRADE_REP_BONUSES[grade]
     let bonusPoints = 0
@@ -281,20 +325,6 @@ export default class Game extends Phaser.Scene {
       .setVisible(bonusPoints !== 0)
     this.addBonusRepText.setPosition(this.addRepText.x, this.addRepText.y + 20)
 
-    const addRepCb = () => {
-      this.reputationScore += pointsToAdd + bonusPoints
-      this.reputationText
-        .setText(`Rep: ${this.reputationScore}`)
-        .setPosition(GameConstants.WINDOW_WIDTH - this.reputationText.displayWidth - 40, 30)
-      this.addRepText.setPosition(0, this.reputationText.y + 20)
-      if (this.reputationScore <= 0) {
-        this.cameras.main.fadeOut(1000, 0, 0, 0)
-        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-          this.scene.start('game-over')
-        })
-      }
-    }
-
     this.tweens.add({
       targets: [this.addRepText],
       y: '-=20',
@@ -304,7 +334,7 @@ export default class Game extends Phaser.Scene {
       },
       onComplete: () => {
         if (bonusPoints === 0) {
-          addRepCb()
+          this.handleRepTracking(pointsToAdd + bonusPoints)
         }
       },
     })
@@ -318,38 +348,100 @@ export default class Game extends Phaser.Scene {
       },
       onComplete: () => {
         if (bonusPoints !== 0) {
-          addRepCb()
+          this.handleRepTracking(pointsToAdd + bonusPoints)
         }
       },
     })
   }
 
-  getTimeGrade(timeToComplete: number) {
-    if (timeToComplete > 0 && timeToComplete < 10) {
+  getTimeGrade(completionTime: number) {
+    if (completionTime > 0 && completionTime < 5) {
       return TimeGradeTypes.LIGHTNING
-    } else if (timeToComplete > 10 && timeToComplete < 20) {
+    } else if (completionTime > 5 && completionTime < 10) {
       return TimeGradeTypes.FAST
-    } else if (timeToComplete > 20 && timeToComplete < 30) {
+    } else if (completionTime > 10 && completionTime < 25) {
       return TimeGradeTypes.AVERAGE
     } else {
       return TimeGradeTypes.SLOW
     }
   }
 
+  adjustMaxCountdown() {
+    if (this.numPatronsServed > 10) {
+      this.maxCountdown = 30
+      return
+    }
+    if (this.numPatronsServed > 25) {
+      this.maxCountdown = 20
+      return
+    }
+    if (this.numPatronsServed > 50) {
+      this.maxCountdown = 15
+      return
+    }
+    if (this.numPatronsServed > 75) {
+      this.maxCountdown = 10
+      return
+    }
+  }
+
+  increaseNumPatronsServed() {
+    this.numPatronsServed++
+    this.numPatronsServedText.setText(`Served: ${this.numPatronsServed}`)
+    this.numPatronsServedText.setPosition(
+      this.timerText.x - this.numPatronsServedText.displayWidth - 30,
+      this.timerText.y
+    )
+  }
+
   evaluateDrink(recipe: BloodTypes[]) {
-    const timeToComplete = this.timer
-    this.timer = 0
+    const timeToComplete = this.maxCountdown - this.timer
+    this.timer = this.maxCountdown
     this.updateTimerText()
     const grade = this.currCustomer.evaluateDrink(recipe)
     const timeGrade = this.getTimeGrade(timeToComplete)
     this.currCustomer.displayReaction(grade as CocktailGrade, () => {
       this.addRep(grade as CocktailGrade, timeGrade)
+      if (grade !== CocktailGrade.D && grade !== CocktailGrade.F && grade !== CocktailGrade.DEAD) {
+        this.increaseNumPatronsServed()
+        this.adjustMaxCountdown()
+      }
       this.goblet.clearGlassAndReset()
       if (grade === CocktailGrade.DEAD) {
         this.currCustomer.die()
       } else {
         this.currCustomer.moveAlong()
       }
+    })
+  }
+
+  penalizeTimeout() {
+    this.addRepText.setText('-50')
+    this.addRepText.setPosition(
+      GameConstants.WINDOW_WIDTH - this.addRepText.displayWidth - 40,
+      this.reputationText.y + 20
+    )
+    this.tweens.add({
+      targets: [this.addRepText],
+      y: '-=20',
+      alpha: {
+        from: 1,
+        to: 0,
+      },
+      onComplete: () => {
+        this.handleRepTracking(-50)
+      },
+    })
+  }
+
+  customerTimeout() {
+    this.currCustomer.timeout(() => {
+      this.penalizeTimeout()
+      this.timerEvent.paused
+      this.timer = this.maxCountdown
+      this.updateTimerText()
+      this.goblet.clearGlassAndReset()
+      this.currCustomer.moveAlong()
     })
   }
 }

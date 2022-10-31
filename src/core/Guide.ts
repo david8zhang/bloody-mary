@@ -15,7 +15,7 @@ const GUIDE_PAGES = [
   {
     title: '1. General tips',
     lines: [
-      '- Speed is of the essence!',
+      '- Speed is of the essence! As you become more reputable, customers will have higher expectations!',
       "- Don't overpour dangerous allergens!",
       '- Your reputation is everything!',
     ],
@@ -97,8 +97,7 @@ export class Guide {
       bgColor: 0xebd5b3,
       textColor: 0x000000,
       onPress: () => {
-        this.game.isShowingGuide = false
-        this.hide()
+        this.game.handleCloseGuide()
       },
     })
 
@@ -150,12 +149,14 @@ export class Guide {
     this.titleText.setText(page.title).setStyle({
       fontSize: '40px',
       color: 'black',
+      fontFamily: 'Alagard',
     })
     this.titleText.setPosition(GameConstants.WINDOW_WIDTH / 2 - this.titleText.displayWidth / 2, 75)
 
     const contents = page.lines.join('\n\n')
     this.contents.setText(contents).setStyle({
       fontSize: '25px',
+      fontFamily: 'Alagard',
       color: 'black',
     })
 

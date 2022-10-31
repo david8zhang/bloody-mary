@@ -23,7 +23,9 @@ export class Blood {
 
   createSprite(config: BloodConfig) {
     const { position } = config
-    const sprite = this.game.add.sprite(position.x, position.y, config.bloodType.toLowerCase())
+    const sprite = this.game.add
+      .sprite(position.x, position.y, config.bloodType.toLowerCase())
+      .setScale(1.5)
     sprite.setInteractive()
     sprite.on('pointerdown', () => {
       if (!this.game.isShowingGuide) {
@@ -35,11 +37,11 @@ export class Blood {
   }
 
   selectBlood() {
-    this.sprite.setScale(1.5)
+    this.sprite.setScale(1.75)
     this.game.selectBlood(this)
   }
 
   deselect() {
-    this.sprite.setScale(1)
+    this.sprite.setScale(1.5)
   }
 }

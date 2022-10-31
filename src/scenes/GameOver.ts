@@ -1,8 +1,14 @@
 import { GameConstants } from '~/config/GameConstants'
 
 export class GameOver extends Phaser.Scene {
+  private numPatronsServed: number = 0
+
   constructor() {
     super('game-over')
+  }
+
+  init(data: { numPatronsServed: number }) {
+    this.numPatronsServed = data.numPatronsServed
   }
 
   create() {
@@ -22,7 +28,7 @@ export class GameOver extends Phaser.Scene {
       .text(
         GameConstants.WINDOW_WIDTH / 2,
         gameOverText.y + gameOverText.displayHeight + 5,
-        'You were fired'
+        `You served ${this.numPatronsServed} customers!`
       )
       .setStyle({
         fontSize: '30px',
