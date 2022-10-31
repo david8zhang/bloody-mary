@@ -5,12 +5,7 @@ import { Goblet } from '~/core/Goblet'
 import { Blood } from '~/core/Blood'
 import { Button } from '~/ui/Button'
 import { Customer } from '~/core/Customer'
-import {
-  CocktailGrade,
-  COCKTAIL_GRADE_REP_BONUSES,
-  TimeGradeTypes,
-  TIME_BONUSES,
-} from '~/config/GradeConstants'
+import { CocktailGrade, COCKTAIL_GRADE_REP_BONUSES } from '~/config/GradeConstants'
 import { Guide } from '~/core/Guide'
 
 export default class Game extends Phaser.Scene {
@@ -22,7 +17,6 @@ export default class Game extends Phaser.Scene {
   private reputationScore: number = 100
   private reputationText!: Phaser.GameObjects.Text
   private addRepText!: Phaser.GameObjects.Text
-  private addBonusRepText!: Phaser.GameObjects.Text
 
   // Num patrons served
   private numPatronsServedText!: Phaser.GameObjects.Text
@@ -128,10 +122,6 @@ export default class Game extends Phaser.Scene {
       .text(GameConstants.WINDOW_WIDTH - 40, this.reputationText.y + 20, '')
       .setFontSize(18)
       .setFontFamily('Alagard')
-    this.addBonusRepText = this.add
-      .text(this.addRepText.x, this.addRepText.y + 20, '')
-      .setFontSize(18)
-      .setFontFamily('Alagard')
   }
 
   getAllBloodTypes(): BloodTypes[] {
@@ -158,6 +148,13 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
+    this.numPatronsServed = 0
+    this.reputationScore = 100
+    this.maxCountdown = 45
+    this.sound.stopAll()
+    this.sound.play('game-bgm', {
+      loop: true,
+    })
     this.initGameScale()
     this.initButtons()
     this.createBar()
@@ -296,34 +293,22 @@ export default class Game extends Phaser.Scene {
     if (this.reputationScore <= 0) {
       this.cameras.main.fadeOut(1000, 0, 0, 0)
       this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-        this.scene.start('game-over', { numPatronsServed: this.numPatronsServed })
+        this.scene.start('game-over', {
+          numPatronsServed: this.numPatronsServed,
+          assetMappings: this.assetMappings,
+        })
       })
     }
   }
 
-  addRep(grade: CocktailGrade, timeGrade: TimeGradeTypes) {
+  addRep(grade: CocktailGrade) {
     const pointsToAdd = COCKTAIL_GRADE_REP_BONUSES[grade]
-    let bonusPoints = 0
-    if (grade !== CocktailGrade.DEAD) {
-      bonusPoints = TIME_BONUSES[timeGrade]
-      if (grade === CocktailGrade.F || grade === CocktailGrade.D) {
-        bonusPoints = Math.min(0, bonusPoints)
-      }
-    }
     const sign = pointsToAdd > 0 ? '+' : ''
     this.addRepText.setText(`${sign}${pointsToAdd}`).setVisible(true).setAlpha(1)
     this.addRepText.setPosition(
       GameConstants.WINDOW_WIDTH - this.addRepText.displayWidth - 40,
       this.reputationText.y + 20
     )
-
-    const bonusSign = bonusPoints > 0 ? '+' : ''
-    this.addBonusRepText
-      .setText(`${bonusSign}${bonusPoints}`)
-      .setVisible(true)
-      .setAlpha(1)
-      .setVisible(bonusPoints !== 0)
-    this.addBonusRepText.setPosition(this.addRepText.x, this.addRepText.y + 20)
 
     this.tweens.add({
       targets: [this.addRepText],
@@ -333,54 +318,26 @@ export default class Game extends Phaser.Scene {
         to: 0,
       },
       onComplete: () => {
-        if (bonusPoints === 0) {
-          this.handleRepTracking(pointsToAdd + bonusPoints)
-        }
+        this.handleRepTracking(pointsToAdd)
       },
     })
-    this.tweens.add({
-      delay: 100,
-      targets: [this.addBonusRepText],
-      y: '-=20',
-      alpha: {
-        from: 1,
-        to: 0,
-      },
-      onComplete: () => {
-        if (bonusPoints !== 0) {
-          this.handleRepTracking(pointsToAdd + bonusPoints)
-        }
-      },
-    })
-  }
-
-  getTimeGrade(completionTime: number) {
-    if (completionTime > 0 && completionTime < 5) {
-      return TimeGradeTypes.LIGHTNING
-    } else if (completionTime > 5 && completionTime < 10) {
-      return TimeGradeTypes.FAST
-    } else if (completionTime > 10 && completionTime < 25) {
-      return TimeGradeTypes.AVERAGE
-    } else {
-      return TimeGradeTypes.SLOW
-    }
   }
 
   adjustMaxCountdown() {
-    if (this.numPatronsServed > 10) {
-      this.maxCountdown = 30
+    if (this.numPatronsServed >= 50) {
+      this.maxCountdown = 10
       return
     }
-    if (this.numPatronsServed > 25) {
-      this.maxCountdown = 20
-      return
-    }
-    if (this.numPatronsServed > 50) {
+    if (this.numPatronsServed >= 25) {
       this.maxCountdown = 15
       return
     }
-    if (this.numPatronsServed > 75) {
-      this.maxCountdown = 10
+    if (this.numPatronsServed >= 10) {
+      this.maxCountdown = 20
+      return
+    }
+    if (this.numPatronsServed >= 5) {
+      this.maxCountdown = 30
       return
     }
   }
@@ -395,16 +352,14 @@ export default class Game extends Phaser.Scene {
   }
 
   evaluateDrink(recipe: BloodTypes[]) {
-    const timeToComplete = this.maxCountdown - this.timer
-    this.timer = this.maxCountdown
-    this.updateTimerText()
     const grade = this.currCustomer.evaluateDrink(recipe)
-    const timeGrade = this.getTimeGrade(timeToComplete)
     this.currCustomer.displayReaction(grade as CocktailGrade, () => {
-      this.addRep(grade as CocktailGrade, timeGrade)
+      this.addRep(grade as CocktailGrade)
       if (grade !== CocktailGrade.D && grade !== CocktailGrade.F && grade !== CocktailGrade.DEAD) {
         this.increaseNumPatronsServed()
         this.adjustMaxCountdown()
+        this.timer = this.maxCountdown
+        this.updateTimerText()
       }
       this.goblet.clearGlassAndReset()
       if (grade === CocktailGrade.DEAD) {

@@ -143,16 +143,16 @@ export class Customer {
     if (isDead) {
       return CocktailGrade.DEAD
     }
-    if (accuracyPct < 0.6) {
+    if (accuracyPct < 0.1) {
       return CocktailGrade.F
     }
-    if (accuracyPct >= 0.6 && accuracyPct < 0.7) {
+    if (accuracyPct >= 0.1 && accuracyPct < 0.25) {
       return CocktailGrade.D
     }
-    if (accuracyPct >= 0.7 && accuracyPct < 0.8) {
+    if (accuracyPct >= 0.25 && accuracyPct < 0.6) {
       return CocktailGrade.C
     }
-    if (accuracyPct >= 0.8 && accuracyPct < 0.9) {
+    if (accuracyPct >= 0.6 && accuracyPct < 0.9) {
       return CocktailGrade.B
     }
     if (accuracyPct > 0.9) {
@@ -193,8 +193,11 @@ export class Customer {
         randTemplate =
           additionalLineTemplates[Phaser.Math.Between(0, additionalLineTemplates.length - 1)]
       }
-
-      prefLines.push(`${randTemplate} ${randLevelAdjective} ${randPrefAdjective}.`)
+      if (!randLevelAdjective) {
+        prefLines.push(`${randTemplate} ${randPrefAdjective}`)
+      } else {
+        prefLines.push(`${randTemplate} ${randLevelAdjective} ${randPrefAdjective}.`)
+      }
     })
     return prefLines
   }
@@ -212,17 +215,36 @@ export class Customer {
       .setFontSize(25)
   }
 
+  getConfigurationBasedOnNumServed() {
+    if (this.game.numPatronsServed < 5) {
+      return ['F']
+    } else if (this.game.numPatronsServed >= 5 && this.game.numPatronsServed < 10) {
+      return ['F', 'MM']
+    } else if (this.game.numPatronsServed >= 10 && this.game.numPatronsServed < 15) {
+      return ['F', 'MM', 'HL']
+    } else {
+      return ['F', 'MM', 'HL', 'MLL']
+    }
+  }
+
   generatePreferences() {
-    const possibleLevelConfigurations = ['MM', 'MLL', 'HL']
+    const possibleLevelConfigurations = this.getConfigurationBasedOnNumServed()
     const randomLevelPrefIdx = Phaser.Math.Between(0, possibleLevelConfigurations.length - 1)
     const config = possibleLevelConfigurations[randomLevelPrefIdx]
     const allPrefTypes = Object.keys(PrefTypes).filter((type) => {
       return isNaN(Number(type))
     })
-    Game.shuffle(allPrefTypes)
     let preferenceMap = {}
     switch (config) {
+      case 'F': {
+        const prefType = allPrefTypes[Phaser.Math.Between(0, allPrefTypes.length - 1)]
+        preferenceMap = {
+          [prefType]: LevelTypes.FULL,
+        }
+        break
+      }
       case 'MM': {
+        Game.shuffle(allPrefTypes)
         const medPrefType1 = allPrefTypes[0]
         const medPrefType2 = allPrefTypes[1]
         preferenceMap = {
@@ -232,6 +254,7 @@ export class Customer {
         break
       }
       case 'MLL': {
+        Game.shuffle(allPrefTypes)
         const medPrefType = allPrefTypes[0]
         const lightPrefType1 = allPrefTypes[1]
         const lightPrefType2 = allPrefTypes[2]
@@ -243,6 +266,7 @@ export class Customer {
         break
       }
       case 'HL': {
+        Game.shuffle(allPrefTypes)
         const highPrefType = allPrefTypes[0]
         const lightPrefType = allPrefTypes[1]
         preferenceMap = {

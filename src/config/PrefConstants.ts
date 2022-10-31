@@ -21,12 +21,14 @@ export enum LevelTypes {
   LIGHT = 'LIGHT',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
+  FULL = 'FULL',
 }
 
 export const LEVEL_TO_PERCENTAGE_MAPPING = {
   [LevelTypes.LIGHT]: 0.25,
   [LevelTypes.MEDIUM]: 0.5,
   [LevelTypes.HIGH]: 0.75,
+  [LevelTypes.FULL]: 1,
 }
 
 export const PREF_ADJECTIVES = {
@@ -45,7 +47,6 @@ export const PREF_ADJECTIVES = {
     'enjoyable',
     'tasty',
     'succulent',
-    'scrumptious',
     'appetizing',
     'flavorful',
     'delightful',
@@ -54,18 +55,17 @@ export const PREF_ADJECTIVES = {
   [PrefTypes.ALLERGY]: [
     'dangerous',
     'adventurous',
-    'spicy',
     'edgy',
     'daring',
     'poisonous',
     'strong',
     'potent',
-    'hard',
     'risky',
   ],
 }
 
 export const LEVEL_ADJECTIVES = {
+  [LevelTypes.FULL]: [''],
   [LevelTypes.LIGHT]: [
     'slightly',
     'lightly',

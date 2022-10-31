@@ -1,5 +1,4 @@
 import { GameConstants } from '~/config/GameConstants'
-import { Button } from '~/ui/Button'
 
 export class Start extends Phaser.Scene {
   private assetMappings: any = {}
@@ -12,12 +11,17 @@ export class Start extends Phaser.Scene {
   }
 
   create() {
+    this.sound.play('title-bgm', {
+      loop: true,
+    })
+
     const text = this.add
       .text(GameConstants.WINDOW_WIDTH / 2, GameConstants.WINDOW_HEIGHT / 2 - 50, 'Bloody Mary')
       .setFontFamily('Alagard')
       .setFontSize(150)
       .setDepth(1000)
-      .setColor('#dc143c')
+      .setColor('#880808')
+      .setStroke('#FFCCCB', 15)
     text.setPosition(GameConstants.WINDOW_WIDTH / 2 - text.displayWidth / 2)
 
     const subtitleText = this.add
@@ -47,20 +51,7 @@ export class Start extends Phaser.Scene {
 
   createMarySprite() {
     this.add
-      .sprite(GameConstants.WINDOW_WIDTH / 2, GameConstants.WINDOW_HEIGHT * 0.75, 'female-face')
-      .setDepth(1000)
-    this.add
-      .sprite(
-        GameConstants.WINDOW_WIDTH / 2,
-        GameConstants.WINDOW_HEIGHT * 0.75,
-        'female-eyes2-mammal'
-      )
-      .setDepth(1000)
-    this.add
-      .sprite(GameConstants.WINDOW_WIDTH / 2, GameConstants.WINDOW_HEIGHT * 0.75, 'bartender')
-      .setDepth(1000)
-    this.add
-      .sprite(GameConstants.WINDOW_WIDTH / 2, GameConstants.WINDOW_HEIGHT * 0.75, 'female-hair-2')
+      .sprite(GameConstants.WINDOW_WIDTH / 2, GameConstants.WINDOW_HEIGHT * 0.8, 'mary')
       .setDepth(1000)
   }
 }
