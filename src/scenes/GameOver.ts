@@ -13,6 +13,7 @@ export class GameOver extends Phaser.Scene {
         fontSize: '50px',
         color: 'white',
       })
+      .setFontFamily('Alagard')
     gameOverText.setPosition(
       GameConstants.WINDOW_WIDTH / 2 - gameOverText.displayWidth / 2,
       GameConstants.WINDOW_HEIGHT / 2 - 50
@@ -27,6 +28,7 @@ export class GameOver extends Phaser.Scene {
         fontSize: '30px',
         color: 'white',
       })
+      .setFontFamily('Alagard')
     subtitleText.setPosition(
       GameConstants.WINDOW_WIDTH / 2 - subtitleText.displayWidth / 2,
       gameOverText.y + gameOverText.displayHeight + 5

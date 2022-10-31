@@ -15,6 +15,9 @@ export default class Preload extends Phaser.Scene {
     this.loadEyes()
     this.loadOutfits()
     this.loadHair()
+    this.loadBloodTypes()
+    this.loadTable()
+    this.loadBartenderOutfit()
   }
 
   getAllBloodTypePathNames() {
@@ -77,7 +80,22 @@ export default class Preload extends Phaser.Scene {
     })
   }
 
+  loadBloodTypes() {
+    const bloodTypes = ['fish', 'mammal', 'bird', 'reptile', 'human']
+    bloodTypes.forEach((bloodType) => {
+      this.load.image(`${bloodType}`, `blood/${bloodType}.png`)
+    })
+  }
+
+  loadTable() {
+    this.load.image('table', 'table.png')
+  }
+
+  loadBartenderOutfit() {
+    this.load.image('bartender', 'bartender.png')
+  }
+
   create() {
-    this.scene.start('game', { assetMappings: this.assetMappings })
+    this.scene.start('start', { assetMappings: this.assetMappings })
   }
 }

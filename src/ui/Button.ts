@@ -13,6 +13,7 @@ export interface ButtonConfig {
   depth?: number
   bgColor?: number
   textColor?: number
+  fontFamily?: string
 }
 
 export class Button {
@@ -58,6 +59,9 @@ export class Button {
       .setColor(
         buttonConfig.textColor != undefined ? buttonConfig.textColor.toString(16) : '#ffffff'
       )
+    if (buttonConfig.fontFamily) {
+      this.buttonText.setFontFamily(buttonConfig.fontFamily)
+    }
   }
 
   setVisible(isVisible: boolean) {

@@ -68,7 +68,7 @@ export class Customer {
   resetSpriteTextures() {
     const affinityPath = this.affinityType.toLowerCase()
     const allergyPath = this.allergyType.toLowerCase()
-    const gender = 'male'
+    const gender = ['male', 'female'][Phaser.Math.Between(0, 1)]
     Object.keys(this.spriteMapping).forEach((layer) => {
       let allKeysForLayer = this.game.assetMappings[`${gender}`][`${layer}`]
       if (layer === 'eyes') {

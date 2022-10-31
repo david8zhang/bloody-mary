@@ -30,8 +30,7 @@ export default class Game extends Phaser.Scene {
   private timerText!: Phaser.GameObjects.Text
 
   // Bar
-  private barTop!: Phaser.GameObjects.Rectangle
-  private barBottom!: Phaser.GameObjects.Rectangle
+  private barTop!: Phaser.GameObjects.Sprite
 
   // Blood Types to choose from
   private bloods: Blood[] = []
@@ -54,24 +53,16 @@ export default class Game extends Phaser.Scene {
   }
 
   createBar() {
-    const height = GameConstants.WINDOW_HEIGHT * 0.4
-    const width = GameConstants.WINDOW_WIDTH
-
-    const yPos = GameConstants.WINDOW_HEIGHT * 0.5 + 210
+    const yPos = GameConstants.WINDOW_HEIGHT * 0.5
     const xPos = GameConstants.WINDOW_WIDTH * 0.5
-    this.barTop = this.add
-      .rectangle(xPos, yPos, width, height, 0x964b00)
-      .setDepth(GameConstants.SORT_ORDER.bar)
-    this.barBottom = this.add
-      .rectangle(xPos, this.barTop.y + this.barTop.displayHeight, width, height, 0x7b3f00)
-      .setDepth(GameConstants.SORT_ORDER.bar)
+    this.barTop = this.add.sprite(xPos, yPos, 'table').setDepth(GameConstants.SORT_ORDER.bar)
   }
 
   createGoblet() {
     this.goblet = new Goblet(this, {
       position: {
         x: 140,
-        y: GameConstants.WINDOW_HEIGHT / 2 + 60,
+        y: GameConstants.WINDOW_HEIGHT / 2 + 30,
       },
     })
   }
@@ -128,7 +119,7 @@ export default class Game extends Phaser.Scene {
   createBloods() {
     const bloodTypes = this.getAllBloodTypes()
     let xPos = 60
-    const yPos = this.barTop.y + 60
+    const yPos = this.barTop.y + 250
     bloodTypes.forEach((bloodType: string) => {
       new Blood(this, {
         position: {

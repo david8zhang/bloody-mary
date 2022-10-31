@@ -35,6 +35,7 @@ const GUIDE_PAGES = [
       'Allergens match up with the eye color of the customer!',
       "Sometimes the customer might ask for blood they're allergic to. Again, pay attention to words!",
       'Examples: dangerous, spicy, adventurous, daring, risky, strong...',
+      "Pro tip: Nobody's allergic to human blood!",
       'BE CAREFUL! Too much of an allergen can kill the customer!',
     ],
   },

@@ -1,4 +1,4 @@
-import { BloodTypes, BLOOD_TYPE_TO_COLOR } from '~/config/BloodTypes'
+import { BloodTypes } from '~/config/BloodTypes'
 import { GameConstants } from '~/config/GameConstants'
 import Game from '~/scenes/Game'
 
@@ -12,7 +12,7 @@ export interface BloodConfig {
 
 export class Blood {
   private game: Game
-  public sprite: Phaser.GameObjects.Rectangle
+  public sprite: Phaser.GameObjects.Sprite
   public bloodType: BloodTypes
 
   constructor(game: Game, config: BloodConfig) {
@@ -23,11 +23,7 @@ export class Blood {
 
   createSprite(config: BloodConfig) {
     const { position } = config
-    const mixBottleWidth = 60
-    const mixBottleHeight = 150
-    const sprite = this.game.add.rectangle(position.x, position.y, mixBottleWidth, mixBottleHeight)
-    sprite.setFillStyle(BLOOD_TYPE_TO_COLOR[config.bloodType], 0.75)
-    sprite.setStrokeStyle(2, 0xffffff)
+    const sprite = this.game.add.sprite(position.x, position.y, config.bloodType.toLowerCase())
     sprite.setInteractive()
     sprite.on('pointerdown', () => {
       if (!this.game.isShowingGuide) {
@@ -39,11 +35,11 @@ export class Blood {
   }
 
   selectBlood() {
-    this.sprite.setStrokeStyle(4, 0xffff00)
+    this.sprite.setScale(1.5)
     this.game.selectBlood(this)
   }
 
   deselect() {
-    this.sprite.setStrokeStyle(2, 0xffffff)
+    this.sprite.setScale(1)
   }
 }

@@ -23,7 +23,7 @@ export const COCKTAIL_GRADE_LINES = {
     'This is delicious!',
     'You have my respect, sir!',
     'Bravo! What a drink!',
-    'I need to tell somebody about this!',
+    'Incredible! I should tell my friends!',
     "Oh that's incredible!",
   ],
   [CocktailGrade.B]: [
