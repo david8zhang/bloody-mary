@@ -32,6 +32,20 @@ export class Mentor {
   playEffects() {
     if (this.dialogIndex === 4) {
       this.tween = this.game.tweens.add({
+        targets: [this.game.bloods[3].sprite],
+        repeat: 3,
+        alpha: {
+          from: 1,
+          to: 0,
+        },
+        onStop: () => {
+          this.game.bloods[3].sprite.setAlpha(1)
+        },
+        yoyo: true,
+        duration: 500,
+      })
+    } else if (this.dialogIndex === 6) {
+      this.tween = this.game.tweens.add({
         targets: [this.sprites[3], this.game.bloods[2].sprite],
         repeat: 3,
         alpha: {
@@ -45,7 +59,7 @@ export class Mentor {
         yoyo: true,
         duration: 500,
       })
-    } else if (this.dialogIndex === 9) {
+    } else if (this.dialogIndex === 11) {
       this.tween = this.game.tweens.add({
         targets: [this.game.bloods[0].sprite],
         repeat: 3,
@@ -59,7 +73,7 @@ export class Mentor {
         yoyo: true,
         duration: 500,
       })
-    } else if (this.dialogIndex === 17) {
+    } else if (this.dialogIndex === 19) {
       this.tween = this.game.tweens.add({
         targets: [this.game.guideOnTable],
         repeat: 3,
@@ -73,7 +87,7 @@ export class Mentor {
         yoyo: true,
         duration: 500,
       })
-    } else if (this.dialogIndex === 21) {
+    } else if (this.dialogIndex === 23) {
       this.tween = this.game.tweens.add({
         targets: [this.game.timerText],
         repeat: 3,
@@ -87,8 +101,7 @@ export class Mentor {
         yoyo: true,
         duration: 500,
       })
-    } else if (this.dialogIndex === 23) {
-      console.log('Went here!')
+    } else if (this.dialogIndex === 25) {
       this.tween = this.game.tweens.add({
         targets: [this.game.reputationText],
         repeat: 3,

@@ -171,11 +171,11 @@ export class Customer {
       'I want to drink something',
     ]
     const additionalLineTemplates = [
-      'With something',
-      'And also something',
-      'Plus something',
-      'As well as something',
-      'Along with something',
+      'And in addition,',
+      'And also',
+      'Plus',
+      'As well as',
+      'Along with',
     ]
 
     Object.keys(this.preferenceMap).forEach((key: string, index: number) => {
@@ -217,13 +217,11 @@ export class Customer {
 
   getConfigurationBasedOnNumServed() {
     if (this.game.numPatronsServed < 5) {
-      return ['F']
+      return ['MM']
     } else if (this.game.numPatronsServed >= 5 && this.game.numPatronsServed < 10) {
-      return ['F', 'MM']
-    } else if (this.game.numPatronsServed >= 10 && this.game.numPatronsServed < 15) {
-      return ['F', 'MM', 'HL']
+      return ['MM', 'HL']
     } else {
-      return ['F', 'MM', 'HL', 'MLL']
+      return ['MM', 'HL', 'MLL']
     }
   }
 
@@ -236,13 +234,6 @@ export class Customer {
     })
     let preferenceMap = {}
     switch (config) {
-      case 'F': {
-        const prefType = allPrefTypes[Phaser.Math.Between(0, allPrefTypes.length - 1)]
-        preferenceMap = {
-          [prefType]: LevelTypes.FULL,
-        }
-        break
-      }
       case 'MM': {
         Game.shuffle(allPrefTypes)
         const medPrefType1 = allPrefTypes[0]

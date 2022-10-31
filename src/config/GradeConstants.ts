@@ -28,22 +28,25 @@ export const TIMEOUT_LINES = [
 
 export const COCKTAIL_GRADE_LINES = {
   [CocktailGrade.A]: [
-    'Amazing!',
-    "Wow, that's great!",
-    'This is delicious!',
-    'You have my respect, sir!',
-    'Bravo! What a drink!',
-    'Incredible! I should tell my friends!',
+    'Amazing! You have a talent for this!',
+    "Oh yes, that's a 10 out of 10!",
+    "Wow, that's perfect!",
+    'This is absolutely delicious!',
+    "Love it. You have my respect, ma'am!",
+    "Bravo! Best thing I've tasted in a while!",
+    "It's wonderful! I should tell my friends!",
     "Oh that's incredible!",
+    "I love this! I'll be coming here a lot more from now on!",
   ],
   [CocktailGrade.B]: [
-    'Nice, not bad',
+    'Nice, not bad!',
     'Pretty good!',
-    "Yeah that's not half bad!",
-    'Good!',
+    "Yeah, that's not half bad!",
+    'Good job!',
+    'Great overall, just needs a tiny bit more',
     'A solid drink.',
-    'Nicely done.',
-    'Very solid drink.',
+    'Nicely done!',
+    'Ooh, I like it.',
   ],
   [CocktailGrade.C]: [
     "It's okay...was expecting more",
@@ -58,10 +61,10 @@ export const COCKTAIL_GRADE_LINES = {
   ],
   [CocktailGrade.D]: [
     "Sorry but...it's pretty bad.",
-    "Don't like it very much...",
+    "Ehh...I don't like it very much...",
     "Oh that's not great...",
     "Oof. You could've done better on that one.",
-    'Bleh. Do better next time...',
+    'Bleh. Please do better next time...',
     'Are you sure you heard me right?',
     "This isn't very good.",
     'Not great...Not great at all...',
@@ -77,11 +80,12 @@ export const COCKTAIL_GRADE_LINES = {
     "Give me that again and I'll stake you myself!",
   ],
   [CocktailGrade.DEAD]: [
-    "AAAGH! I'm dying!",
+    "AAAGH! What have you done?! I'm dying!",
     "You've killed me you idiot!",
     "I'll get you for this!!!",
     "Y-you scum! You've poisoned me!",
     'What was in this?! Gahhhh...',
+    "Look at my eyes! I'm allergic you fool! Ackkk",
   ],
 }
 

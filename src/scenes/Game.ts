@@ -16,7 +16,8 @@ export default class Game extends Phaser.Scene {
   public isShowingGuide: boolean = false
 
   // Reputation
-  private reputationScore: number = 100
+  private defaultReputationScore: number = 1000
+  private reputationScore: number = this.defaultReputationScore
   public reputationText!: Phaser.GameObjects.Text
   private addRepText!: Phaser.GameObjects.Text
 
@@ -152,7 +153,7 @@ export default class Game extends Phaser.Scene {
 
   create() {
     this.numPatronsServed = 0
-    this.reputationScore = 100
+    this.reputationScore = this.defaultReputationScore
     this.maxCountdown = 45
     this.sound.stopAll()
     this.sound.play('game-bgm', {
@@ -163,8 +164,8 @@ export default class Game extends Phaser.Scene {
     this.createBar()
     this.createGoblet()
     this.createBloods()
-    // this.createCustomer()
-    this.createMentor()
+    this.createCustomer()
+    // this.createMentor()
     this.createReputationScoreText()
     this.createTimerText()
     this.createGuide()

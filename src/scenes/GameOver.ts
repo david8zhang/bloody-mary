@@ -9,7 +9,6 @@ export class GameOver extends Phaser.Scene {
   }
 
   init(data: { numPatronsServed: number; assetMappings: any }) {
-    console.log(data.numPatronsServed)
     this.numPatronsServed = data.numPatronsServed
     this.assetMappings = data.assetMappings
   }
@@ -52,7 +51,7 @@ export class GameOver extends Phaser.Scene {
       .setFontFamily('Alagard')
     continueText.setPosition(
       GameConstants.WINDOW_WIDTH / 2 - continueText.displayWidth / 2,
-      subtitleText.y + 50
+      subtitleText.y + 100
     )
 
     this.tweens.add({

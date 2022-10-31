@@ -32,66 +32,14 @@ export const LEVEL_TO_PERCENTAGE_MAPPING = {
 }
 
 export const PREF_ADJECTIVES = {
-  [PrefTypes.SELF]: [
-    'classic',
-    'old-fashioned',
-    'tried and true',
-    'conventional',
-    'normal',
-    'no-frills',
-    'standard',
-    'regular',
-  ],
-  [PrefTypes.AFFINITY]: [
-    'delicious',
-    'enjoyable',
-    'tasty',
-    'succulent',
-    'appetizing',
-    'flavorful',
-    'delightful',
-    'pleasant',
-  ],
-  [PrefTypes.ALLERGY]: [
-    'dangerous',
-    'adventurous',
-    'edgy',
-    'daring',
-    'poisonous',
-    'strong',
-    'potent',
-    'risky',
-  ],
+  [PrefTypes.SELF]: ['classic', 'normal', 'basic', 'standard'],
+  [PrefTypes.AFFINITY]: ['delicious', 'enjoyable', 'tasty', 'appetizing'],
+  [PrefTypes.ALLERGY]: ['dangerous', 'adventurous', 'edgy', 'poisonous'],
 }
 
 export const LEVEL_ADJECTIVES = {
   [LevelTypes.FULL]: [''],
-  [LevelTypes.LIGHT]: [
-    'slightly',
-    'lightly',
-    'faintly',
-    'a bit',
-    'vaguely',
-    'a shade',
-    'a touch',
-    'a little',
-  ],
-  [LevelTypes.MEDIUM]: [
-    'fairly',
-    'moderately',
-    'kind of',
-    'pretty',
-    'more or less',
-    'modestly',
-    'rather',
-  ],
-  [LevelTypes.HIGH]: [
-    'heavily',
-    'intensely',
-    'mostly',
-    'seriously',
-    'very',
-    'thoroughly',
-    'extremely',
-  ],
+  [LevelTypes.LIGHT]: ['a quarter'],
+  [LevelTypes.MEDIUM]: ['half'],
+  [LevelTypes.HIGH]: ['three quarters'],
 }

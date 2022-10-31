@@ -16,26 +16,23 @@ const GUIDE_PAGES = [
     title: '1. General tips',
     lines: [
       'Speed is of the essence! As you become more reputable, customers will have higher expectations!',
-      "Don't overpour dangerous allergens!",
+      "Don't overpour poisonous allergens!",
       'Your reputation is everything!',
     ],
   },
   {
     title: '2. How to pour orders',
     lines: [
-      'Pay attention to certain words!',
-      'Each pour is 1/8 of a glass.',
-      'Quarter Glass: slightly, lightly, a bit, vaguely, a shade',
-      'Half Glass: fairly, moderately, kind of, pretty, more or less',
-      'Three Quarters Glass: heavily, intensely, mostly, seriously, very',
+      "The customer's order will determine how much to pour",
+      'Each pour(click) is 1/8 of a glass.',
+      'You must fill the glass and mix it first in order to serve!',
     ],
   },
   {
     title: '3. Determining Allergens',
     lines: [
-      'Allergens match up with the eye color of the customer!',
-      "Sometimes the customer might ask for blood they're allergic to. Again, pay attention to words!",
-      'Examples: dangerous, spicy, adventurous, daring, risky, strong...',
+      "The customer's eye color will indicate which blood type is poisonous to them.",
+      "Sometimes the customer might ask for blood that's poisonous. Pay attention to words like: 'dangerous', 'adventurous', 'edgy', or 'poisonous'",
       "Pro tip: Nobody's allergic to human blood!",
       'BE CAREFUL! Too much of an allergen can kill the customer!',
     ],
@@ -43,9 +40,9 @@ const GUIDE_PAGES = [
   {
     title: '4. Determining taste',
     lines: [
-      'Tastes match up with the outfit of the customer!',
-      'Customer might ask for something "delicious", "flavorful", or "pleasant"',
-      'If they want something "normal", "classic", "no frills", or "standard" serve up the standard human blood! It never fails to please the old-fashioned types...',
+      'Customers indicate their favorite blood type with their outfit color!',
+      "Pour them their favorite if they ask for something 'delicious', 'enjoyable', 'tasty', or 'appetizing'",
+      'If they want something "normal", "classic", "basic", or "standard" serve them human blood! (Fourth bottle from the left) It never fails to please the old-fashioned types.',
     ],
   },
 ]
